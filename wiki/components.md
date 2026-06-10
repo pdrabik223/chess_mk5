@@ -36,4 +36,5 @@ Pi Pico W as Led controller, board state reader, web app server, and pico cluste
 
 pico has 264 kB of SRAM mem (pico w a little les)
 
+Alternatively, we could use Arduino as board state handler - this complicates stuff immensely 
 
