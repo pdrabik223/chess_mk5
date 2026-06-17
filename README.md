@@ -26,3 +26,21 @@ Front end should be written in React-ts so not te be horrific. Now rpi probably 
 # Questions
 1. how well does the cell lights up
 2. what type of magnet should I use     
+
+# Set up 
+
+## WebApp
+
+1. Project is using vite 
+```bash
+npm install -g vite
+```
+
+2. Install packages
+```bash
+npm i
+```
+3. Run application in dev mode
+```bash 
+npm run dev
+```
