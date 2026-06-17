@@ -33,4 +33,21 @@ Front end should be written in React-ts so not te be horrific. Now rpi probably 
 2. Checkers
 3. 8*8 Ships
 4. 3*3 Tic Tac toe 
-5. 
+
+# Set up 
+
+## WebApp
+
+1. Project is using vite 
+```bash
+npm install -g vite
+```
+
+2. Install packages
+```bash
+npm i
+```
+3. Run application in dev mode
+```bash 
+npm run dev
+```
