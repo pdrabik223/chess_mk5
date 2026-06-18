@@ -51,3 +51,11 @@ npm i
 ```bash 
 npm run dev
 ```
+
+
+# Rpi Pi pico Utf's:
+
+[Local Pico W](RPI_PICO_W-20260406-v1.28.0.uf2)
+
+[Pico W](https://micropython.org/download/RPI_PICO_W/) 
+
