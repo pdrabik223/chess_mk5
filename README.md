@@ -1,6 +1,6 @@
 # chess_mk5
 
- LET'S OVER-ENGINEER IT and duck AI 
+ LET'S OVER-ENGINEER IT and fuck AI 
 
 1. local chess server 
    1. web app detects if there's chess board present in local network, connects to it and enables two ppl to play chess with board as server - maybe add clock 
