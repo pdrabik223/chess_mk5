@@ -13,6 +13,8 @@
 
 Front end should be written in React-ts so not te be horrific. Now rpi probably could host small app in  html & js, but is not nesesery. Web App that can work both as Board IU and Game Interface. So the approach is I host it on GH, and board redirects to it when user log's in. App on startup tries to connect to board using Local network. And from there we communicate with board back and forward.
 
+# [c_sdk info](https://www.raspberrypi.com/documentation/microcontrollers/c_sdk.html)
+
 # Web app functionality 
 1. User should be logged in with a name, simple cookies based naming will do
 2. UI should allow for complete control over board:
