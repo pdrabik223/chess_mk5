@@ -1,5 +1,5 @@
 import type { FunctionComponent, JSX, Key } from 'react';
-import './App.css'
+
 import { useSearchParams } from "react-router";
 import { v4 as uuidv4 } from 'uuid';
 import { Row } from './components/row';
@@ -16,10 +16,23 @@ class Color {
     this.g = g;
     this.b = b;
   }
+  static fromHex(hex: String): Color {
+    hex = hex.replace("#", "");
+    if (hex.length !== 6) return new Color(255, 0, 0);
+    const num = parseInt(hex.toString(), 16);
+
+    const r = (num >> 16) & 255;
+    const g = (num >> 8) & 255;
+    const b = num & 255;
+
+    return new Color(r, g, b);
+  }
 
   toRGB() {
     return "rgb(" + this.r.toString() + ", " + this.g.toString() + ", " + this.b.toString() + " " + ")"
-
+  }
+  toHexString() {
+    return this.r.toString(16).padStart(2, '0') + this.g.toString(16).padStart(2, '0') + this.b.toString(16).padStart(2, '0')
   }
 }
 
@@ -29,11 +42,39 @@ class Board {
   color: Color[] = [];
   isOccupied: boolean[] = [];
 
-  constructor() {
-    for (let x = 0; x < Board.Width * Board.Height; x++) {
-      this.color.push(new Color(255, 0, 0));
-      this.isOccupied.push(false);
+  constructor(color?: Color[],
+    isOccupied?: boolean[]
+  ) {
+    if (color !== null && color?.length == Board.Width * Board.Height) {
+      this.color = color
     }
+    else
+      for (let x = 0; x < Board.Width * Board.Height; x++) {
+        this.color.push(new Color(255, 0, 0));
+      }
+    if (isOccupied !== null && isOccupied?.length == Board.Width * Board.Height) {
+      this.isOccupied = isOccupied
+    } else
+      for (let x = 0; x < Board.Width * Board.Height; x++) {
+        this.isOccupied.push(false);
+      }
+  }
+
+  fromJson(data: Map<String, any>): Board {
+
+    let colors: String[] = data.get('c') as String[];
+    let state: String[] = data.get('s') as String[];
+
+    let parsedColors: Color[] = [];
+    let parsedState: boolean[] = [];
+
+
+    for (let i = 0; i < colors.length; i++) {
+      parsedColors.push(Color.fromHex(colors[i]));
+      parsedState.push(state[i] == '1')
+    }
+
+    return new Board(parsedColors, parsedState)
   }
 
   getData(): [Color, boolean][] {
@@ -46,6 +87,18 @@ class Board {
 
     return data;
   }
+
+  toJson() {
+    let colors: String[] = []
+    let state: String[] = []
+
+    for (let x of this.getData()) {
+      colors.push(x[0].toHexString());
+      state.push(x[1] ? "1" : "0");
+    }
+    return { "c": colors, 's': state }
+  }
+
 }
 
 interface CellInterface {
@@ -88,15 +141,12 @@ const BoardWidget: FunctionComponent<BoardWidgetInterface> = (props): JSX.Elemen
   for (let x = 0; x < Board.Width; x++) {
     let rowData: JSX.Element[] = [];
     for (let y = 0; y < Board.Height; y++) {
-      // for (let x of props.board.getData()) {
       rowData.push(<CellWidget color={boardData[x * Board.Width + y][0]} isOccupied={boardData[x * Board.Width + y][1]} key={uuidv4()} />);
-
-      // }
     }
-
     cells.push(<Row key={uuidv4()} children={rowData} />);
   }
 
+  console.log(props.board.toJson())
   return <>
     {
       cells
