@@ -1,8 +1,7 @@
-import type { FunctionComponent, JSX, Key } from 'react';
+import type { FunctionComponent, JSX } from 'react';
 
-import { useSearchParams } from "react-router";
 import { v4 as uuidv4 } from 'uuid';
-import { Row } from './components/row';
+import { Row } from './components/Row';
 
 
 
