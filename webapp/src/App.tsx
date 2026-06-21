@@ -1,4 +1,4 @@
-import type { FunctionComponent, JSX } from 'react';
+import { useState, type FunctionComponent, type JSX } from 'react';
 
 import { v4 as uuidv4 } from 'uuid';
 import { Row } from './components/Row';
@@ -154,6 +154,29 @@ const BoardWidget: FunctionComponent<BoardWidgetInterface> = (props): JSX.Elemen
 }
 
 function App() {
+
+  async function searchForServer(): Promise<String | null> {
+    let localNetworkHeader = "http://192.168.1."
+
+
+    for (let x = 0; x < 255; x++) {
+      console.log(localNetworkHeader + x.toString() + "/v1/status")
+      try {
+
+        let resp = await fetch(localNetworkHeader + x.toString() + "/v1/status", { signal: AbortSignal.timeout(1000) })
+        if (resp.ok) {
+          console.log("HERE!")
+          return localNetworkHeader + x.toString();
+
+        }
+      } catch (error: unknown) {
+        console.log(error)
+      }
+    }
+
+    return null;
+  }
+  let [boardServerIP, setBoardServerIP] = useState<Promise<String | null>>(() => { return searchForServer() });
 
   // let [searchParams] = useSearchParams();
 
