@@ -2,6 +2,7 @@ import type { FunctionComponent, JSX, Key } from 'react';
 import './App.css'
 import { useSearchParams } from "react-router";
 import { v4 as uuidv4 } from 'uuid';
+import { Row } from './components/row';
 
 
 
@@ -17,7 +18,7 @@ class Color {
   }
 
   toRGB() {
-    return "rgb(" + this.r.toString() + " " + this.g.toString() + " " + this.b.toString() + " " + ")"
+    return "rgb(" + this.r.toString() + ", " + this.g.toString() + ", " + this.b.toString() + " " + ")"
 
   }
 }
@@ -57,15 +58,22 @@ interface CellInterface {
 const CellWidget: FunctionComponent<CellInterface> = (props): JSX.Element => {
   // console.log(props.color)
 
+  let x = props.isOccupied ? "X" : "";
   return <div style={{
-    height: '12.5%',
-    width: '12.5%',
+    height: '100%',
+    width: '100%',
     padding: '5%',
 
   }} >
-    <div style={{ color: props.color.toRGB() }}></div>
+    <div style={{
+      height: '50px',
+      width: '50px',
+      background: props.color.toRGB()
+    }}>
 
-  </div>
+      {x}
+    </div>
+  </div >
 }
 
 
@@ -76,14 +84,19 @@ interface BoardWidgetInterface {
 const BoardWidget: FunctionComponent<BoardWidgetInterface> = (props): JSX.Element => {
 
   let cells: JSX.Element[] = [];
-  cell
+  let boardData = props.board.getData();
+  for (let x = 0; x < Board.Width; x++) {
+    let rowData: JSX.Element[] = [];
+    for (let y = 0; y < Board.Height; y++) {
+      // for (let x of props.board.getData()) {
+      rowData.push(<CellWidget color={boardData[x * Board.Width + y][0]} isOccupied={boardData[x * Board.Width + y][1]} key={uuidv4()} />);
 
-  for (let x of props.board.getData()) {
+      // }
+    }
 
-    cells.push(<CellWidget color={item[0]} isOccupied={item[1]} key={uuidv4()}> </CellWidget>);
+    cells.push(<Row key={uuidv4()} children={rowData} />);
   }
 
-  console.log(cells)
   return <>
     {
       cells
@@ -97,12 +110,11 @@ function App() {
 
   // const [serverUrl, setServerUrl] = useState<String | null>("null")
 
-  return <>
+  return <div style={{ width: "500px", height: "500px" }}>
+
     <BoardWidget board={new Board()}></BoardWidget>
-    {/* <p>
-      You searched for <i>{searchParams.get("q")}</i>
-    </p> */}
-  </>
+  </div>
+
 
 }
 
