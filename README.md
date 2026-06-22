@@ -1,4 +1,4 @@
-# chess_mk5
+# [Chess_mk5](https://pdrabik223.github.io/chess_mk5/)
 
  LET'S OVER-ENGINEER IT and fuck AI 
 
@@ -64,18 +64,6 @@ npm run dev
 
 
 # How to connect fronted to board server in local network
-
-Rpi pi pico after connecting to local network is assigned random local ip. Now depending on router used and network settings, it's possible to request mapping between "local host name" and assigned ip address or to lock ip for specific mac adres. This is not always possible or requires local network router configuration. 
-
-This random ip is a problem since our frontend web app needs to know this address in order to send and receive data. This means that board server needs to somehow pass it's IP information to web app running on another device, assuming it's connected to the same network.
-
-Some approaches how to solve this issue:
-1. Plain display for user to type into interface. Small or hidden display that shows server IP address.
-2. Active RFID antenna that will allow user to scan it with phone and open website with ip provided as param
-3. Scan all 255 possible addresses in search of the one specific one 
-4. Display some kind of encoded message using board led's for user to type in the interface
-5. Make server broadcast it's own IP so it's easily detectable by any app
-
 
 Connecting a Frontend to a Board Server on a Local Network
 
