@@ -82,7 +82,7 @@ class VBytes {
     while (stringBuffer.length != 0) {
       let char = stringBuffer.indexOf('1')
       if (char == -1) break;
-      stringBuffer = stringBuffer.substring(64)
+      stringBuffer = stringBuffer.substring(supportedCharacters.length)
       text += supportedCharacters[char]
 
     }
@@ -99,7 +99,7 @@ class VBytes {
     let tempBuffer: string = ""
 
     for (let i = 0; i < base64String.length; i++) {
-      for (let j = 0; j < 64; j++) {
+      for (let j = 0; j < supportedCharacters.length; j++) {
         if (supportedCharacters.indexOf(base64String[i]) == j)
           tempBuffer += '1'
         else
