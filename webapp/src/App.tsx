@@ -40,13 +40,20 @@ class VBytes {
 
       if (bufferCopy.length == 0) break;
 
-      positions.push(bufferCopy.indexOf('1'))
+      let pos = bufferCopy.indexOf('1')
+
+      for (let p of positions) {
+        if (p <= pos) pos += 1;
+      }
+      positions.push(pos)
 
       bufferCopy = bufferCopy.substring(byteLength)
 
     }
     return positions;
   }
+
+
 
   fromPositions(data: number[]) {
     this.buffer = ""
@@ -55,7 +62,15 @@ class VBytes {
 
     for (let d = 0; d < data.length || d >= this.minByteLength; d++) {
       let byteLength = this.maxByteLength - d
-      this.buffer += "0".repeat(data[d]) + '1' + "0".repeat(byteLength - data[d] - 1)
+
+      let pos = data[d];
+
+      for (let p = 0; p < d; p++) {
+        if (data[p] <= pos) pos -= 1;
+      }
+
+
+      this.buffer += "0".repeat(pos) + '1' + "0".repeat(byteLength - pos - 1)
     }
 
   }
@@ -109,7 +124,7 @@ class VBytes {
 
     this.buffer = ""
 
-    for (let vByte = 0; vByte < this.maxByteLength - this.minByteLength; vByte++) {
+    for (let vByte = 0; vByte < this.maxByteLength - this.minByteLength - 1; vByte++) {
       let byteLength = this.maxByteLength - vByte - 1 // first bit is reserved for empty indicator  
       if (tempBuffer.length == 0) return this.buffer
 
