@@ -1,4 +1,4 @@
-import { useState, type ChangeEvent } from 'react';
+import { useState, type ChangeEvent, type JSX } from 'react';
 import { Board } from './board/Board';
 import BoardWidget from './widgets/board/BoardWIdget';
 
@@ -14,9 +14,7 @@ class VBytes {
   // Variable byte length memory structure
   // Every 'byte' encodes with different length
   // first bit of every byte is reserved for encoding '0', meaning 0 = "1000" 
-  // bytes are encoded linearly, meaning 1 = "0100", 2 = "0100", 3 = "0001"
-
-
+  // bytes are encoded linearly, meaning 0 = "1000", 1 = "0100", 2 = "0100", 3 = "0001"
 
   buffer: string = ""
 
@@ -29,7 +27,6 @@ class VBytes {
     if (base64String == null) return;
     else this.buffer = new VBytes().encodeString(base64String)
   }
-
 
 
   toPositions(): number[] {
@@ -169,6 +166,12 @@ function App() {
   let board2 = new VBytes()
   board2.fromPositions(board1.toPositions())
 
+  let cellIcons = new Map<number, JSX.Element>()
+
+  for (let pos = 0; pos < board1.toPositions().length; pos++)
+    cellIcons.set(board1.toPositions()[pos], <h2 style={{ color: "yellow" }}>{pos + 1}</h2>);
+
+
   return <div style={{ backgroundColor: 'grey' }}>
     <input onChange={onChange} />
     <p>no supported characters: {supportedCharacters.length}</p>
@@ -180,7 +183,8 @@ function App() {
     <p>from positions (len: {board2.buffer.length}) {board2.show()}</p>
 
     <p>Back to string {board2.decodeString()}</p>
-    <BoardWidget board={new Board()}></BoardWidget>
+    <BoardWidget
+      cellIcons={cellIcons} board={new Board()}></BoardWidget>
   </div>
 
 

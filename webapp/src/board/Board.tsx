@@ -13,10 +13,13 @@ export class Board {
       this.color = color;
     }
 
-    else
+    else {
+      let flip = false;
       for (let x = 0; x < Board.Width * Board.Height; x++) {
-        this.color.push(new Color(255, 0, 0));
+        this.color.push(flip ? new Color(44, 44, 44) : new Color(144, 144, 144));
+        if (x % 8 != 7) flip = !flip
       }
+    }
     if (isOccupied !== null && isOccupied?.length == Board.Width * Board.Height) {
       this.isOccupied = isOccupied;
     }
