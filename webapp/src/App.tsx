@@ -7,110 +7,148 @@ const supportedCharacters: String =
   "0123456789" +
   "abcdefghijklmnopqrstuvwxyz" +
   "ABCDEFGHIJKLMNOPQRSTUVWXYZ" +
-  "_" + ".";
+  "_";
 
 
-class BoardBits {
-  base64string: string = ""
-  static noPieces = 32
-  static no64byteChunks = 24
+class VBytes {
+  // Variable byte length memory structure
+  // Every 'byte' encodes with different length
+  // first bit of every byte is reserved for encoding '0', meaning 0 = "1000" 
+  // bytes are encoded linearly, meaning 1 = "0100", 2 = "0100", 3 = "0001"
 
+
+
+  buffer: string = ""
+
+  // map: Map<number, string> = new Map<number, string>()
+
+  maxByteLength: number = 64
+  minByteLength: number = 32
 
   constructor(base64String?: string) {
     if (base64String == null) return;
-    else this.base64string = new BoardBits().encodeString(base64String)
-
+    else this.buffer = new VBytes().encodeString(base64String)
   }
 
+
+
   toPositions(): number[] {
-    let index = 0;
+
     let positions: number[] = []
 
-    let data_copy = this.base64string
+    let bufferCopy = this.buffer
 
-    while (index < 32) {
-      if (data_copy.length == 0) {
-        return positions
-      };
+    for (let vByte = 0; vByte < this.maxByteLength - this.minByteLength; vByte++) {
+      let byteLength = this.maxByteLength - vByte  // first bit is reserved for empty indicator  
 
-      if (data_copy.length < 64 - index) {
-        console.log(data_copy.length)
-        console.log("padding by", (64 - index) - data_copy.length)
-        data_copy.padEnd((64 - index) - data_copy.length, "0")
-      }
+      if (bufferCopy.length == 0) break;
 
-      let number = data_copy.substring(0, 64 - index)
-      let pos = number.indexOf('1');
-      if (pos == -1)
-        // return positions;
-        positions.push(0)
-      else
-        positions.push(pos + 1)
-      data_copy = data_copy.substring(64 - index)
-      index += 1
+      positions.push(bufferCopy.indexOf('1'))
+
+      bufferCopy = bufferCopy.substring(byteLength)
 
     }
     return positions;
-
   }
 
   fromPositions(data: number[]) {
-    if (data.length == 0) this.base64string = ""
-    let index = 0;
-    while (1 < 2) {
-      if (data.length == index) return
-      for (let i = 0; i < 64 - index; i++) {
-        if (data[index] == i + 1)
-          this.base64string += '1'
-        else
-          this.base64string += '0'
-      }
-      index += 1
+    this.buffer = ""
+
+    if (data.length == 0) return
+
+    for (let d = 0; d < data.length || d >= this.minByteLength; d++) {
+      let byteLength = this.maxByteLength - d
+      this.buffer += "0".repeat(data[d]) + '1' + "0".repeat(byteLength - data[d] - 1)
     }
 
   }
   decodeString(): string {
-    if (this.base64string.length == 0)
+    if (this.buffer.length == 0)
       return ""
 
+    let bufferCopy = this.buffer;
+    let stringBuffer = ""
 
-    let dataCopy = this.base64string;
+    for (let vByte = 0; vByte < this.maxByteLength - this.minByteLength; vByte++) {
+      let byteLength = this.maxByteLength - vByte  // first bit is reserved for empty indicator  
+
+      if (bufferCopy.length == 0) break;
+
+      let byteData: string = bufferCopy.substring(1, byteLength)
+      bufferCopy = bufferCopy.substring(byteLength)
+
+      stringBuffer += byteData
+
+    }
+
     let text = ""
-
-    while (dataCopy.length != 0) {
-
-      let char = dataCopy.indexOf('1')
-      if (char == -1) return text;
+    while (stringBuffer.length != 0) {
+      let char = stringBuffer.indexOf('1')
+      if (char == -1) break;
+      stringBuffer = stringBuffer.substring(64)
       text += supportedCharacters[char]
-      dataCopy = dataCopy.substring(64)
 
     }
     return text;
 
   }
+
   encodeString(base64String: String): string {
-    this.base64string = ""
+    this.buffer = ""
 
     if (base64String.length == 0)
-      return this.base64string
+      return this.buffer
 
-    // if (base64String.length >= BoardBits.no64byteChunks) {
-    //   console.log("data is longer than available space, skipping overflow")
-    //   base64String = base64String.substring(0, BoardBits.no64byteChunks)
-    // }
+    let tempBuffer: string = ""
 
     for (let i = 0; i < base64String.length; i++) {
-
       for (let j = 0; j < 64; j++) {
         if (supportedCharacters.indexOf(base64String[i]) == j)
-          this.base64string += '1'
+          tempBuffer += '1'
         else
-          this.base64string += '0'
+          tempBuffer += '0'
       }
     }
-    return this.base64string
+
+    this.buffer = ""
+
+    for (let vByte = 0; vByte < this.maxByteLength - this.minByteLength; vByte++) {
+      let byteLength = this.maxByteLength - vByte - 1 // first bit is reserved for empty indicator  
+      if (tempBuffer.length == 0) return this.buffer
+
+      if (tempBuffer.length < byteLength)
+        if (tempBuffer.indexOf('1') != -1)
+          tempBuffer += "0".repeat(byteLength - tempBuffer.length);
+        else return this.buffer
+
+      let byteData: string = tempBuffer.substring(0, byteLength)
+      tempBuffer = tempBuffer.substring(byteLength)
+      let leading = byteData.indexOf('1') == -1 ? '1' : "0"
+      this.buffer += leading + byteData
+
+    }
+
+    return this.buffer
+  }
+
+
+
+  show() {
+    let formatterString = ""
+    let bufferCopy = this.buffer
+
+    for (let vByte = 0; vByte < this.maxByteLength - this.minByteLength; vByte++) {
+      let byteLength = this.maxByteLength - vByte
+      formatterString += bufferCopy.substring(0, byteLength)
+      bufferCopy = bufferCopy.substring(byteLength)
+      formatterString += ` (${byteLength})`
+      if (bufferCopy.length == 0) return formatterString
+      formatterString += ' '
+    }
+    return formatterString
   }
 }
+
 
 function App() {
   const [text, setText] = useState<string>("");
@@ -126,10 +164,9 @@ function App() {
     setText(newValue);
   }
 
-  let board1 = new BoardBits(text)
+  let board1 = new VBytes(text)
 
-
-  let board2 = new BoardBits()
+  let board2 = new VBytes()
   board2.fromPositions(board1.toPositions())
 
   return <div style={{ backgroundColor: 'grey' }}>
@@ -137,9 +174,10 @@ function App() {
     <p>no supported characters: {supportedCharacters.length}</p>
     <p>Raw text (len: {text.length}): {text}</p>
 
-    <p>As board bits (len: {board1.base64string.length}) {board1.base64string}</p>
+    <p>As board bits (len: {board1.buffer.length}) {board1.show()}</p>
+    <p>As text {board1.decodeString()}</p>
     <p>As board positions {board1.toPositions().join(" ")}</p>
-    <p>from positons (len: {board2.base64string.length}) {board2.base64string}</p>
+    <p>from positions (len: {board2.buffer.length}) {board2.show()}</p>
 
     <p>Back to string {board2.decodeString()}</p>
     <BoardWidget board={new Board()}></BoardWidget>
