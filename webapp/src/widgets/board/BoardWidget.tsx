@@ -23,7 +23,6 @@ const BoardWidget: FunctionComponent<BoardWidgetInterface> = (props): JSX.Elemen
             let highlight = false;
 
 
-
             if (props.cellIcons != undefined && props.cellIcons.has(x * Board.Width + y)) {
                 child = props.cellIcons.get(x * Board.Width + y)
             }
@@ -33,11 +32,12 @@ const BoardWidget: FunctionComponent<BoardWidgetInterface> = (props): JSX.Elemen
             }
 
             rowData.push(<CellWidget
+               
                 child={child}
                 highlight={highlight}
                 color={boardData[x * Board.Width + y][0]} isOccupied={boardData[x * Board.Width + y][1]} key={uuidv4()} />);
         }
-        cells.push(<Row expanded={true} key={uuidv4()} children={rowData} />);
+        cells.push(<Row expanded={false} key={uuidv4()} children={rowData} />);
     }
 
 

@@ -1,191 +1,25 @@
 import { useState, type ChangeEvent, type JSX } from 'react';
 import { Board } from './board/Board';
 import BoardWidget from './widgets/board/BoardWIdget';
+import { VBytes } from './board/VBytes';
+import './App.css';
 
-
-const supportedCharacters: String =
+export const defaultSupportedCharacters: String =
   "0123456789" +
   "abcdefghijklmnopqrstuvwxyz" +
   "ABCDEFGHIJKLMNOPQRSTUVWXYZ" +
-  "_";
-
-
-class VBytes {
-  // Variable byte length memory structure
-  // Every 'byte' encodes with different length
-  // first bit of every byte is reserved for encoding '0', meaning 0 = "1000" 
-  // bytes are encoded linearly, meaning 0 = "1000", 1 = "0100", 2 = "0100", 3 = "0001"
-
-  buffer: string = ""
-
-  // map: Map<number, string> = new Map<number, string>()
-
-  maxByteLength: number = 64
-  minByteLength: number = 32
-
-  constructor(base64String?: string) {
-    if (base64String == null) return;
-    else this.buffer = new VBytes().encodeString(base64String)
-  }
-
-
-  toPositions(): number[] {
-
-    let positions: number[] = []
-
-    let bufferCopy = this.buffer
-
-    for (let vByte = 0; vByte < this.maxByteLength - this.minByteLength; vByte++) {
-      let byteLength = this.maxByteLength - vByte  // first bit is reserved for empty indicator  
-
-      if (bufferCopy.length == 0) break;
-
-      let pos = bufferCopy.indexOf('1')
-
-      let positionsCopy = positions.slice();
-
-      for (let p = 0; p < positionsCopy.length; p++) {
-        if (positionsCopy[p] <= pos) {
-          positionsCopy.splice(p, 1)
-          p = -1
-          pos += 1
-        }
-      }
-
-      if (positions.indexOf(pos) != -1)
-        console.error("Duplicated index found at:", pos, "encoded val:", bufferCopy.indexOf('1'))
-
-      positions.push(pos)
-
-      bufferCopy = bufferCopy.substring(byteLength)
-
-    }
-    return positions;
-  }
-
-
-
-  fromPositions(data: number[]) {
-    console.log(data)
-    this.buffer = ""
-
-    if (data.length == 0) return
-    let result = []
-
-    for (let d = 0; d < data.length; d++) {
-
-      let byteLength = this.maxByteLength - d
-
-      let pos = data[d];
-      // if (d > 0)
-        for (let p = 0; p < d; p++) {
-          if (data[p] < data[d]) { pos -= 1; }
-        }
-        result.push(pos)
-
-      this.buffer += "0".repeat(pos) + '1' + "0".repeat(byteLength - pos - 1)
-    }
-    console.log(result)
-
-  }
-  decodeString(): string {
-    if (this.buffer.length == 0)
-      return ""
-
-    let bufferCopy = this.buffer;
-    let stringBuffer = ""
-    let pos = 0
-    for (let vByte = 0; vByte < this.maxByteLength - this.minByteLength; vByte++) {
-      let byteLength = this.maxByteLength - vByte  // first bit is reserved for empty indicator  
-
-      if (bufferCopy.length == 0) break;
-
-      pos += bufferCopy.indexOf('1')
-
-      if (pos == -1) {
-        console.log("Decode sting, empty byte")
-
-      }
-      if (pos != 0) {
-        stringBuffer += supportedCharacters[pos - 1]
-        pos = 0
-      } else {
-        pos += byteLength - 1
-      }
-      bufferCopy = bufferCopy.substring(byteLength)
-
-    }
-
-    return stringBuffer;
-
-  }
-
-  encodeString(data: String): string {
-    this.buffer = ""
-
-    if (data.length == 0)
-      return this.buffer
-
-    this.buffer = ""
-
-    for (let vByte = 0; vByte < this.maxByteLength - this.minByteLength - 1; vByte++) {
-      let byteLength = this.maxByteLength - vByte - 1 // first bit is reserved for empty indicator  
-      if (data.length == 0) return this.buffer
-
-      let pos = supportedCharacters.indexOf(data[0])
-
-      if (pos == -1) {
-        console.log(`String encoding error, unsupported character '${data[0]}', skipping`)
-      }
-      if (pos < byteLength) {
-        this.buffer += '0' + '0'.repeat(pos) + '1' + '0'.repeat(byteLength - pos - 1)
-        data = data.substring(1)
-      } else if (pos >= byteLength) {
-        this.buffer += '1' + '0'.repeat(byteLength)
-        data = supportedCharacters[pos - byteLength] + data.substring(1)
-      }
-
-    }
-
-    return this.buffer
-  }
-
-
-
-  show() {
-    let formatterString = ""
-    let bufferCopy = this.buffer
-
-    for (let vByte = 0; vByte < this.maxByteLength - this.minByteLength; vByte++) {
-      let byteLength = this.maxByteLength - vByte
-      formatterString += bufferCopy.substring(0, byteLength)
-      bufferCopy = bufferCopy.substring(byteLength)
-      formatterString += ` (${byteLength})`
-      if (bufferCopy.length == 0) return formatterString
-      formatterString += ' '
-    }
-    return formatterString
-  }
-}
+  "_" + "$" + "@" + "!";
 
 
 function App() {
-  const [text, setText] = useState<string>("");
 
-  const onChange = (e: ChangeEvent<HTMLInputElement>) => {
-    let newValue = ""
-    for (let char of e.target.value) {
-      if (supportedCharacters.indexOf(char) == -1) continue;
-      newValue += char;
+  const [text, setText] = useState<String>("");
+  const [supportedCharacters, setSupportedCharacters] = useState<String>(defaultSupportedCharacters);
+  const [noPieces, setNOPieces] = useState<number>(32);
 
-    }
+  let board1 = new VBytes(text, 64 - noPieces, supportedCharacters)
 
-    setText(newValue);
-  }
-
-  let board1 = new VBytes(text)
-
-  let board2 = new VBytes()
+  let board2 = new VBytes("", 64 - noPieces, supportedCharacters)
   board2.fromPositions(board1.toPositions())
 
   let cellIcons = new Map<number, JSX.Element>()
@@ -193,22 +27,108 @@ function App() {
   for (let pos = 0; pos < board1.toPositions().length; pos++)
     cellIcons.set(board1.toPositions()[pos], <h2 style={{ color: "yellow" }}>{pos + 1}</h2>);
 
+  let posUnique = true
+  for (let x = 0; x < board1.toPositions().length; x++) {
+    if (board1.toPositions().indexOf(board1.toPositions()[x]) != board1.toPositions().lastIndexOf(board1.toPositions()[x]))
+      posUnique = false
+  }
 
-  return <div style={{ backgroundColor: 'grey' }}>
-    <input onChange={onChange} />
-    <p>no supported characters: {supportedCharacters.length}</p>
-    <p>raw text (len: {text.length}): {text}</p>
 
-    <p>text -> board bits (len: {board1.buffer.length}) {board1.show()}</p>
-    <p>board bits -> text {board1.decodeString()}</p>
-    <p>board bits -> board positions {board1.toPositions().join(" ")}</p>
-    <p>board positions -> board positions {board2.toPositions().join(" ")}</p>
-    <p>board positions -> board bits (len: {board2.buffer.length}) {board2.show()}</p>
+  return (
+    <div className="app-container">
+      <div className="app-panel">
+        <section className="info-card">
+          <h1 className="section-heading">V-Byte encoding</h1>
+          <p className="section-description">
+            Variable length byte memory representation. Each encoded byte has a different
+            length: the first byte is 64 bits, the next is 63 bits, and so on, down to a
+            minimum length of 64 minus the configured number of pieces.
+          </p>
+          <p className="section-description">
+            The leading bit of each byte is reserved to represent the zero value, for example
+            0 is encoded as "1000". Remaining values use a one-hot bit pattern, such as
+            1 = "0100", 2 = "0010", 3 = "0001".
+          </p>
+          <p className="section-description">
+            The total number of encodable symbols depends on the board size and the selected
+            character set. Because byte lengths vary, some symbols may require different
+            numbers of bytes to encode.
+          </p>
+        </section>
 
-    <p>Back to string {board2.decodeString()}</p>
-    <BoardWidget
-      cellIcons={cellIcons} board={new Board()}></BoardWidget>
-  </div>
+        <section className="info-card">
+          <h1 className="section-heading">Configuration</h1>
+          <div className="form-grid">
+            <div className="field-group">
+              <label className="field-label" htmlFor="supportedCharacters">Supported characters</label>
+              <input
+                id="supportedCharacters"
+                className="text-input wide-input"
+                defaultValue={defaultSupportedCharacters as string}
+                onChange={(e) => setSupportedCharacters(e.target.value)}
+              />
+              <p className="note">Supported character count: {supportedCharacters.length}</p>
+            </div>
+
+            <div className="field-group">
+              <label className="field-label" htmlFor="pieceCount">Number of pieces</label>
+              <input
+                id="pieceCount"
+                className="text-input"
+                type="number"
+                defaultValue={noPieces}
+                onChange={(e) => setNOPieces(parseInt(e.target.value))}
+              />
+            </div>
+          </div>
+        </section>
+
+        <section className="info-card">
+          <h1 className="section-heading">Input</h1>
+            <div className="field-group">
+              <label className="field-label" htmlFor="rawText">Raw text input</label>
+              <input
+                id="rawText"
+                className="text-input wide-input"
+                onChange={(e) => setText(e.target.value)}
+              />
+            </div>
+          <p className="note">Raw text length: {text.length}</p>
+          <p className="note">Characters outside of the supported set are ignored.</p>
+          <p className="note">Board positions (displayed below): <span className="mono">{board1.toPositions().join(' ')}</span></p>
+        </section>
+
+        <section className="board-wrapper">
+          <BoardWidget
+            cellIcons={cellIcons}
+            board={new Board()}
+          />
+        </section>
+
+        <section className="output-card">
+          <h1 className="section-heading">Output</h1>
+          <div className="status-row">
+            <div className="status-card">
+              <p className="status-label">Decoded output</p>
+              <p className="status-value mono">'{board2.decodeString()}'</p>
+            </div>
+            <div className="status-card">
+              <p className="status-label">Strings match</p>
+              <p className={`status-value ${board2.decodeString() === board1.decodeString() ? 'status-value--true' : 'status-value--false'}`}>
+                {board2.decodeString() === board1.decodeString() ? 'True' : 'False'}
+              </p>
+            </div>
+            <div className="status-card">
+              <p className="status-label">Positions unique</p>
+              <p className={`status-value ${posUnique ? 'status-value--true' : 'status-value--false'}`}>
+                {posUnique ? 'True' : 'False'}
+              </p>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+  );
 
 
 }
