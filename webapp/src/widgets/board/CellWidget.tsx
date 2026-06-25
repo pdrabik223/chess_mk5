@@ -27,11 +27,10 @@ export const CellWidget: FunctionComponent<CellInterface> = (props): JSX.Element
     display: "flex",
     justifyContent: "center",
     alignItems: "center", 
-    // padding: '5%',
   }}>
     <div style={{
-      height: '50px',
-      width: '50px',
+      height: '80px',
+      width: '80px',
       background: props.color.toRGB(),
 
       ...highlight,

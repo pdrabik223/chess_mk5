@@ -42,9 +42,19 @@ class VBytes {
 
       let pos = bufferCopy.indexOf('1')
 
-      for (let p of positions) {
-        if (p <= pos) pos += 1;
+      let positionsCopy = positions.slice();
+
+      for (let p = 0; p < positionsCopy.length; p++) {
+        if (positionsCopy[p] <= pos) {
+          positionsCopy.splice(p, 1)
+          p = -1
+          pos += 1
+        }
       }
+
+      if (positions.indexOf(pos) != -1)
+        console.error("Duplicated index found at:", pos, "encoded val:", bufferCopy.indexOf('1'))
+
       positions.push(pos)
 
       bufferCopy = bufferCopy.substring(byteLength)
@@ -56,22 +66,26 @@ class VBytes {
 
 
   fromPositions(data: number[]) {
+    console.log(data)
     this.buffer = ""
 
     if (data.length == 0) return
+    let result = []
 
-    for (let d = 0; d < data.length || d >= this.minByteLength; d++) {
+    for (let d = 0; d < data.length; d++) {
+
       let byteLength = this.maxByteLength - d
 
       let pos = data[d];
-
-      for (let p = 0; p < d; p++) {
-        if (data[p] <= pos) pos -= 1;
-      }
-
+      // if (d > 0)
+        for (let p = 0; p < d; p++) {
+          if (data[p] < data[d]) { pos -= 1; }
+        }
+        result.push(pos)
 
       this.buffer += "0".repeat(pos) + '1' + "0".repeat(byteLength - pos - 1)
     }
+    console.log(result)
 
   }
   decodeString(): string {
@@ -80,63 +94,56 @@ class VBytes {
 
     let bufferCopy = this.buffer;
     let stringBuffer = ""
-
+    let pos = 0
     for (let vByte = 0; vByte < this.maxByteLength - this.minByteLength; vByte++) {
       let byteLength = this.maxByteLength - vByte  // first bit is reserved for empty indicator  
 
       if (bufferCopy.length == 0) break;
 
-      let byteData: string = bufferCopy.substring(1, byteLength)
+      pos += bufferCopy.indexOf('1')
+
+      if (pos == -1) {
+        console.log("Decode sting, empty byte")
+
+      }
+      if (pos != 0) {
+        stringBuffer += supportedCharacters[pos - 1]
+        pos = 0
+      } else {
+        pos += byteLength - 1
+      }
       bufferCopy = bufferCopy.substring(byteLength)
 
-      stringBuffer += byteData
-
     }
 
-    let text = ""
-    while (stringBuffer.length != 0) {
-      let char = stringBuffer.indexOf('1')
-      if (char == -1) break;
-      stringBuffer = stringBuffer.substring(supportedCharacters.length)
-      text += supportedCharacters[char]
-
-    }
-    return text;
+    return stringBuffer;
 
   }
 
-  encodeString(base64String: String): string {
+  encodeString(data: String): string {
     this.buffer = ""
 
-    if (base64String.length == 0)
+    if (data.length == 0)
       return this.buffer
-
-    let tempBuffer: string = ""
-
-    for (let i = 0; i < base64String.length; i++) {
-      for (let j = 0; j < supportedCharacters.length; j++) {
-        if (supportedCharacters.indexOf(base64String[i]) == j)
-          tempBuffer += '1'
-        else
-          tempBuffer += '0'
-      }
-    }
 
     this.buffer = ""
 
     for (let vByte = 0; vByte < this.maxByteLength - this.minByteLength - 1; vByte++) {
       let byteLength = this.maxByteLength - vByte - 1 // first bit is reserved for empty indicator  
-      if (tempBuffer.length == 0) return this.buffer
+      if (data.length == 0) return this.buffer
 
-      if (tempBuffer.length < byteLength)
-        if (tempBuffer.indexOf('1') != -1)
-          tempBuffer += "0".repeat(byteLength - tempBuffer.length);
-        else return this.buffer
+      let pos = supportedCharacters.indexOf(data[0])
 
-      let byteData: string = tempBuffer.substring(0, byteLength)
-      tempBuffer = tempBuffer.substring(byteLength)
-      let leading = byteData.indexOf('1') == -1 ? '1' : "0"
-      this.buffer += leading + byteData
+      if (pos == -1) {
+        console.log(`String encoding error, unsupported character '${data[0]}', skipping`)
+      }
+      if (pos < byteLength) {
+        this.buffer += '0' + '0'.repeat(pos) + '1' + '0'.repeat(byteLength - pos - 1)
+        data = data.substring(1)
+      } else if (pos >= byteLength) {
+        this.buffer += '1' + '0'.repeat(byteLength)
+        data = supportedCharacters[pos - byteLength] + data.substring(1)
+      }
 
     }
 
@@ -190,12 +197,13 @@ function App() {
   return <div style={{ backgroundColor: 'grey' }}>
     <input onChange={onChange} />
     <p>no supported characters: {supportedCharacters.length}</p>
-    <p>Raw text (len: {text.length}): {text}</p>
+    <p>raw text (len: {text.length}): {text}</p>
 
-    <p>As board bits (len: {board1.buffer.length}) {board1.show()}</p>
-    <p>As text {board1.decodeString()}</p>
-    <p>As board positions {board1.toPositions().join(" ")}</p>
-    <p>from positions (len: {board2.buffer.length}) {board2.show()}</p>
+    <p>text -> board bits (len: {board1.buffer.length}) {board1.show()}</p>
+    <p>board bits -> text {board1.decodeString()}</p>
+    <p>board bits -> board positions {board1.toPositions().join(" ")}</p>
+    <p>board positions -> board positions {board2.toPositions().join(" ")}</p>
+    <p>board positions -> board bits (len: {board2.buffer.length}) {board2.show()}</p>
 
     <p>Back to string {board2.decodeString()}</p>
     <BoardWidget
