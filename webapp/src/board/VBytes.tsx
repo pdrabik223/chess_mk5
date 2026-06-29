@@ -1,4 +1,4 @@
-import { defaultSupportedCharacters } from '../App';
+import { defaultSupportedCharacters } from "../pages/vByteCalculator";
 
 export class VBytes {
   // Variable byte length memory structure
@@ -128,6 +128,7 @@ export class VBytes {
       if (pos == -1) {
         console.log(`String encoding error, unsupported character '${data[0]}', skipping`);
         data = data.substring(1);
+        vByte--;
         continue;
       }
       if (pos < byteLength) {

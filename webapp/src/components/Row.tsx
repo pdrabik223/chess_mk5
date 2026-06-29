@@ -26,7 +26,7 @@ export const Row: React.FC<RowRef> = (props: RowRef) => {
                     flexDirection: "row",
                     flexWrap: "nowrap",
                     justifyContent: "center",
-                    height: expanded ? "100%" : undefined
+                    width: expanded ? "100%" : undefined
                 };
 
                 return { ...baseStyle, ...(props.style || {}) } as React.CSSProperties;
