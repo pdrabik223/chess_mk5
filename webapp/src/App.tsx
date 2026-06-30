@@ -55,7 +55,7 @@ const AppBar: React.FC<{}> = () => {
         backgroundColor: 'red'
       }}>
 
-      <h1>Logo</ h1>
+      {/* <h1>Logo</ h1> */}
       <img style={{ marginLeft: "auto", height: "80%", top: "10%" }} src={settingsIcon} alt="image not found" />
     </Row>
     <SettingsDrawer />
@@ -68,7 +68,7 @@ const AppBar: React.FC<{}> = () => {
 function App() {
 
 
-  return <>
+  return <>  
     <div className="app-container">
       <AppBar />
 
